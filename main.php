@@ -165,7 +165,7 @@ require 'select.php';
             <tr>
               <td><?php echo htmlspecialchars($item['item_id']); ?></td>
               <td><?php echo htmlspecialchars($item['dish_name']); ?></td>
-              <td>$<?php echo htmlspecialchars($item['price']); ?></td>
+              <td>₱<?php echo htmlspecialchars($item['price']); ?></td>
               <td><?php echo htmlspecialchars($item['category']); ?></td>
               <td>
                 <a href="main.php?tab=menuitems&type=menuitem&id=<?php echo htmlspecialchars($item['item_id']); ?>" class="btn btn-sm btn-warning">Edit</a>
@@ -216,21 +216,18 @@ require 'select.php';
                   <?php foreach ($menuitems_dropdown as $item): ?>
                   <option value="<?php echo htmlspecialchars($item['item_id']); ?>" 
                     <?php echo ($editType == 'order' && $editData && $item['item_id'] == $editData['item_id']) ? 'selected' : ''; ?>>
-                    <?php echo htmlspecialchars($item['dish_name'] . ' - $' . $item['price']); ?>
+                    <?php echo htmlspecialchars($item['dish_name'] . ' - ₱' . $item['price']); ?>
                   </option>
                   <?php endforeach; ?>
                 </select>
-              </div>
-              <div class="mb-3">
-                <label for="add_order_date" class="form-label">Order Date</label>
-                <input type="date" class="form-control" id="add_order_date" name="order_date" 
-                  value="<?php echo ($editType == 'order' && $editData) ? htmlspecialchars($editData['order_date']) : ''; ?>" required>
               </div>
               <div class="mb-3">
                 <label for="add_order_quantity" class="form-label">Quantity</label>
                 <input type="number" class="form-control" id="add_order_quantity" name="quantity" min="1" 
                   value="<?php echo ($editType == 'order' && $editData) ? htmlspecialchars($editData['quantity']) : ''; ?>" required>
               </div>
+              <!-- Hidden field to automatically capture date and time -->
+              <input type="hidden" id="add_order_date" name="order_date" value="">
               <button type="submit" name="<?php echo ($editType == 'order' && $editData) ? 'submit' : 'insert_submit'; ?>" class="btn btn-info">
                 <?php echo ($editType == 'order' && $editData) ? 'Update Order' : 'Add Order'; ?>
               </button>
@@ -261,10 +258,10 @@ require 'select.php';
               <td><?php echo htmlspecialchars($order['order_id']); ?></td>
               <td><?php echo htmlspecialchars($order['first_name'] . ' ' . $order['last_name']); ?></td>
               <td><?php echo htmlspecialchars($order['dish_name']); ?></td>
-              <td>$<?php echo htmlspecialchars($order['price']); ?></td>
+              <td>₱<?php echo htmlspecialchars($order['price']); ?></td>
               <td><?php echo htmlspecialchars($order['quantity']); ?></td>
-              <td><strong>$<?php echo htmlspecialchars(number_format($order['total_price'], 2)); ?></strong></td>
-              <td><?php echo htmlspecialchars($order['order_date']); ?></td>
+              <td><strong>₱<?php echo htmlspecialchars(number_format($order['total_price'], 2)); ?></strong></td>
+              <td><?php echo date('M d, Y h:i A', strtotime($order['order_date'])); ?></td>
               <td>
                 <a href="main.php?tab=orders&type=order&id=<?php echo htmlspecialchars($order['order_id']); ?>" class="btn btn-sm btn-warning">Edit</a>
                 <a href="main.php?delete_type=order&delete_id=<?php echo htmlspecialchars($order['order_id']); ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this record?');">Delete</a>
@@ -278,5 +275,38 @@ require 'select.php';
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    // Automatically capture current date and time when form is submitted
+    document.addEventListener('DOMContentLoaded', function() {
+      // Find all forms and add submit listener
+      const forms = document.querySelectorAll('form');
+      
+      forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+          // Get the hidden order_date field if it exists
+          const orderDateField = form.querySelector('#add_order_date');
+          
+          if (orderDateField) {
+            // Get current date and time
+            const now = new Date();
+            
+            // Format: YYYY-MM-DD HH:MM:SS
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            const dateTimeString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            
+            // Set the hidden field value
+            orderDateField.value = dateTimeString;
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html>
